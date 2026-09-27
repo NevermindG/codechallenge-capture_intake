@@ -234,7 +234,7 @@ Run the PostgreSQL integration test after Compose is running:
 
 ```bash
 DATABASE_URL='postgres://capture:capture@localhost:5432/captures?sslmode=disable' \
-  go test -tags=integration ./internal/capture/adapters/postgres -count=1
+  go test -tags=integration ./internal/capture/adapters/postgres ./internal/capture/application/outbox -count=1
 ```
 
 Run vet:
