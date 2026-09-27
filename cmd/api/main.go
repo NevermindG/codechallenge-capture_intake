@@ -45,9 +45,15 @@ func main() {
 		logger.Error("invalid database configuration", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
+
 	poolCfg.MaxConns = 10
 	poolCfg.MinConns = 1
-	pool := pgxpool.NewWithConfig(context.Background(), poolCfg)
+
+	pool, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
+	if err != nil {
+		logger.Error("failed to create postgres pool", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
 	defer pool.Close()
 
 	startupCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
