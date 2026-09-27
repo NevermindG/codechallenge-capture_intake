@@ -1,0 +1,22 @@
+# Build output
+/bin/
+/dist/
+*.test
+
+# Runtime data
+/data/
+/tmp/
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Coverage
+coverage.out
+coverage.html

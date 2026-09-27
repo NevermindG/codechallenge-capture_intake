@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+bin
+dist
+data
+tmp
+coverage.out
+coverage.html
