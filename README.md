@@ -306,33 +306,3 @@ docker compose up -d api
 The processing row becomes claimable after its lease and the worker delivers it again. The stable delivery key allows the downstream to deduplicate if the first attempt had already been accepted.
 
 To demonstrate retries, set `STUB_FAIL_FIRST_N` in `compose.yaml` to a small value such as `2`; the worker will schedule retries using the exponential policy.
-
-## Trade-offs and deliberate scope
-
-### Why advisory locks instead of serializable transactions only?
-
-A serializable isolation level can also reject concurrent transactions, but then the application must turn serialization failures into a safe retry path. The advisory-lock approach gives a direct per-key critical section while keeping `READ COMMITTED` and lets unrelated keys proceed concurrently. The unique constraint remains the final invariant.
-
-### Why keep the filesystem write inside the DB transaction?
-
-The transaction-scoped lock makes the check, file write, and DB commit one serialized critical section for a key. Most importantly, the file is present before the DB commit. That closes the exact process-death gap described by the exercise after a successful DB commit.
-
-The cost is holding one DB connection during the bounded file write. For this assessment the correctness property is more important than throughput optimization, and the brief explicitly says performance/load testing is out of scope.
-
-### Why no image processing?
-
-The image bytes are opaque by design. The service only applies size and basic image-type validation.
-
-### Why no admin API?
-
-The assessment explicitly excludes a second service/admin UI. Dead rows remain human-inspectable in PostgreSQL and can be re-driven with a documented SQL command.
-
-## Known gaps / unverified locally
-
-This workspace was created in an execution environment that did not have Docker installed and only had Go 1.23.2. The repository is intentionally pinned to the assessment's Go 1.26 baseline, so a full `go test ./...` and `docker compose up --build` could not be executed here. The pure-core packages were run successfully with the installed compiler after temporarily lowering the test copy's `go` directive to 1.23; the project source itself remains at `go 1.26` as required.
-
-The external module network was also blocked in this environment, so the generated submission does not pretend that dependency resolution or the Docker build was locally verified. On a normal machine with Go 1.26+ and Docker available, run `go mod tidy`, `go test ./...`, `go vet ./...`, then `docker compose up --build` before pushing.
-
-## Optional extensions intentionally not implemented
-
-The exercise's optional list is left alone until the required scope is green. OpenAPI, a broker-backed downstream, and S3-compatible storage can be added behind the existing application ports without changing the core capture acceptance logic.
